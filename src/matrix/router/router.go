@@ -3,6 +3,7 @@ package router
 import (
 	"github.com/gorilla/mux"
 	"testTools/src/matrix/handler"
+	. "testTools/src/utils/http_helpers"
 )
 
 func NewRouter() *mux.Router{
@@ -11,13 +12,15 @@ func NewRouter() *mux.Router{
 	r.UseEncodedPath()
 
 	// rule helper
-	add := func(method string, path string, f handler.HandlerFunc) {
+	add := func(method string, path string, f HandlerFunc) {
 		r.Methods(method).Path(path).HandlerFunc(f)
 	}
-	//addTHF := func(method string, path string, f ThinHandlerFunc) {
-	//	add(method, path, WrapTHF(f))
-	//}
+	addTHF := func(method string, path string, f ThinHandlerFunc) {
+		add(method, path, WrapTHF(f))
+	}
 
-	add("GET", "/", handler.HelloWorldHandler)
+	addTHF("GET", "/", handler.Index)
+
+	addTHF("POST", "/tool/proxy", handler.Proxy)
 	return r
 }
