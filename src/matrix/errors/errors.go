@@ -110,4 +110,8 @@ const (
 	MsgSnapshotNameExist = "snapshot exists"
 
 	MsgPinRequired = "pin required"
+
+
+	//Proxy
+	MsgProxyParseUrlFailed = "proxy parse url failed"
 )

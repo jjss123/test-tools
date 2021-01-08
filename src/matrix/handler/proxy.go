@@ -4,10 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/url"
-	"strings"
 	. "testTools/src/matrix/errors"
 	. "testTools/src/utils/http_helpers"
 )
@@ -25,36 +23,48 @@ type ProxyHttp struct {
 
 func Proxy(req *http.Request) (data interface{}, errorType int, message string) {
 	httpRequestIn := new(ProxyHttp)
-	//httpRequestOut := new(ProxyHttp)
 
 	err := UnmarshalHttpBody(req, httpRequestIn)
 	if err != nil {
 		return nil, InvalidInput, MsgUnmarshalRequestFailed
 	}
 
-	requestHost := httpRequestIn.Host
-	requestPath := httpRequestIn.Path
-	requestPath := httpRequestIn.Path
-	requestPath := httpRequestIn.Path
-	data := url.Values{}
-	data.Set("name", "xiaohua")
-	data.Set("id", "654321")
+	//setup url
+	u, err := url.Parse(httpRequestIn.Host)
+	if err != nil {
+		return nil, InvalidInput, MsgProxyParseUrlFailed
+	}
+	u.Path = httpRequestIn.Path
+	q := u.Query()
+	for k, v := range httpRequestIn.Query{
+		q.Set(k, v)
+	}
+	u.RawQuery = q.Encode()
+	var urlStr = u.String()
 
-	u, _ := url.ParseRequestURI(apiUrl)
-	u.Path = resource
-	urlStr := u.String()
+	//setup body
+	requestOutBody, err := json.Marshal(httpRequestIn.Body)
+	var body = &bytes.Buffer{}
+	body.Write(requestOutBody)
 
+	//setup request client
 	client := &http.Client{}
-	r, _ := http.NewRequest("POST", urlStr, strings.NewReader(data.Encode()))
-	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r, _ := http.NewRequest(httpRequestIn.Method, urlStr, body)
 
+	//setup header
+	for k, v := range httpRequestIn.Header{
+		r.Header.Add(k, v)
+	}
+	r.Header.Add("Content-Type", "application/json")
+
+	//send request
 	resp, err := client.Do(r)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
-	defer resp.Body.Close()
-	fmt.Println("[client.Do] request2 sent successfully.")
 
-	return httpRequestIn, 200, "bbbbbbbbbbbbbbbbbbbbbbbbb"
+	//return
+	fmt.Print(json.Marshal(resp.Body))
+	return resp.Body, 200, "success"
 }
