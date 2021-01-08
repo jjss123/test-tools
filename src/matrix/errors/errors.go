@@ -114,4 +114,5 @@ const (
 
 	//Proxy
 	MsgProxyParseUrlFailed = "proxy parse url failed"
+	MsgProxyRequestFailed = "proxy request failed"
 )

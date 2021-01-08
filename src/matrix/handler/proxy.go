@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	. "testTools/src/matrix/errors"
 	. "testTools/src/utils/http_helpers"
+	"testTools/src/utils/marshaler"
 )
 
 type ProxyHttp struct {
@@ -60,11 +62,15 @@ func Proxy(req *http.Request) (data interface{}, errorType int, message string) 
 	//send request
 	resp, err := client.Do(r)
 	if err != nil {
-		fmt.Println(err.Error())
-		return
+		return nil, InvalidInput, MsgProxyRequestFailed
 	}
-
+	defer resp.Body.Close()
 	//return
-	fmt.Print(json.Marshal(resp.Body))
-	return resp.Body, 200, "success"
+	b, err := ioutil.ReadAll(resp.Body)
+
+	a := new(interface{})
+
+	a, err = json.Marshal(b)
+	fmt.Print(b)
+	return string(c), NoError, NoMessage
 }

@@ -13,7 +13,7 @@ func NewRouter() *mux.Router{
 
 	// rule helper
 	add := func(method string, path string, f HandlerFunc) {
-		r.Methods(method).Path(path).HandlerFunc(f)
+		r.Methods(method).Path(path).HandlerFunc(Wrap(handler.MatrixRequestRate, f))
 	}
 	addTHF := func(method string, path string, f ThinHandlerFunc) {
 		add(method, path, WrapTHF(f))

@@ -1,6 +1,7 @@
 package http_helpers
 
 import (
+	"fmt"
 	"net/http"
 	"runtime/debug"
 	. "testTools/src/utils/clog"
@@ -69,6 +70,7 @@ func WrapTHF(f ThinHandlerFunc) HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		// call handler
 		data, errorType, msg := f(req)
+		fmt.Print(data)
 		// make response
 		res := GetResponse(req, data, errorType, msg)
 		// do response
