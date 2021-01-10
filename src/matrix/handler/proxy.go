@@ -20,13 +20,6 @@ type ProxyHttpElement struct {
 	Body       map[string]string
 }
 
-type Result struct {
-	Status       int    `json:"status"`
-	Message      string `json:"message"`
-	ErrorCode    int    `json:"error_code"`
-	ErrorMessage string `json:"error_message"`
-}
-
 func ProxyHttp(req *http.Request) (data interface{}, errorType int, message string) {
 	httpRequestIn := new(ProxyHttpElement)
 
@@ -74,7 +67,7 @@ func ProxyHttp(req *http.Request) (data interface{}, errorType int, message stri
 	defer resp.Body.Close()
 
 	//return
-	b, err := ioutil.ReadAll(resp.Body)
+	b, _ := ioutil.ReadAll(resp.Body)
 	var ret map[string]interface{}
 	if err := json.Unmarshal(b, &ret); err != nil {
 		return nil, InvalidInput, MsgProxyParseReturnBodyFailed
