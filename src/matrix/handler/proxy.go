@@ -3,16 +3,14 @@ package handler
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	. "testTools/src/matrix/errors"
 	. "testTools/src/utils/http_helpers"
-	"testTools/src/utils/marshaler"
 )
 
-type ProxyHttp struct {
+type ProxyHttpElement struct {
 	Method     string
 	Host       string
 	Path       string
@@ -22,55 +20,64 @@ type ProxyHttp struct {
 	Body       map[string]string
 }
 
+type Result struct {
+	Status       int    `json:"status"`
+	Message      string `json:"message"`
+	ErrorCode    int    `json:"error_code"`
+	ErrorMessage string `json:"error_message"`
+}
 
-func Proxy(req *http.Request) (data interface{}, errorType int, message string) {
-	httpRequestIn := new(ProxyHttp)
+func ProxyHttp(req *http.Request) (data interface{}, errorType int, message string) {
+	httpRequestIn := new(ProxyHttpElement)
 
 	err := UnmarshalHttpBody(req, httpRequestIn)
 	if err != nil {
-		return nil, InvalidInput, MsgUnmarshalRequestFailed
+		return nil, InvalidInput, MsgProxyUnmarshalRequestFailed
 	}
 
+	//setup method
+	requestOutMethod:= httpRequestIn.Method
+
 	//setup url
-	u, err := url.Parse(httpRequestIn.Host)
+	newUrl, err := url.Parse(httpRequestIn.Host)
 	if err != nil {
 		return nil, InvalidInput, MsgProxyParseUrlFailed
 	}
-	u.Path = httpRequestIn.Path
-	q := u.Query()
+	newUrl.Path = httpRequestIn.Path
+	newQuery := newUrl.Query()
 	for k, v := range httpRequestIn.Query{
-		q.Set(k, v)
+		newQuery.Set(k, v)
 	}
-	u.RawQuery = q.Encode()
-	var urlStr = u.String()
+	newUrl.RawQuery = newQuery.Encode()
+	var requestOutUrl = newUrl.String()
 
 	//setup body
-	requestOutBody, err := json.Marshal(httpRequestIn.Body)
-	var body = &bytes.Buffer{}
-	body.Write(requestOutBody)
+	newBody, err := json.Marshal(httpRequestIn.Body)
+	var requestOutBody = &bytes.Buffer{}
+	requestOutBody.Write(newBody)
 
 	//setup request client
 	client := &http.Client{}
-	r, _ := http.NewRequest(httpRequestIn.Method, urlStr, body)
+	newRequest, _ := http.NewRequest(requestOutMethod, requestOutUrl, requestOutBody)
 
 	//setup header
 	for k, v := range httpRequestIn.Header{
-		r.Header.Add(k, v)
+		newRequest.Header.Add(k, v)
 	}
-	r.Header.Add("Content-Type", "application/json")
+	newRequest.Header.Add("Content-Type", "application/json")
 
 	//send request
-	resp, err := client.Do(r)
+	resp, err := client.Do(newRequest)
 	if err != nil {
 		return nil, InvalidInput, MsgProxyRequestFailed
 	}
 	defer resp.Body.Close()
+
 	//return
 	b, err := ioutil.ReadAll(resp.Body)
-
-	a := new(interface{})
-
-	a, err = json.Marshal(b)
-	fmt.Print(b)
-	return string(c), NoError, NoMessage
+	var ret map[string]interface{}
+	if err := json.Unmarshal(b, &ret); err != nil {
+		return nil, InvalidInput, MsgProxyParseReturnBodyFailed
+	}
+	return ret, NoError, NoMessage
 }

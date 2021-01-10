@@ -113,6 +113,8 @@ const (
 
 
 	//Proxy
+	MsgProxyUnmarshalRequestFailed = "unmarshal request failed"
 	MsgProxyParseUrlFailed = "proxy parse url failed"
 	MsgProxyRequestFailed = "proxy request failed"
+	MsgProxyParseReturnBodyFailed = "proxy parse return body failed"
 )
