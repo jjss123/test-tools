@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 	. "testTools/src/matrix/errors"
 	. "testTools/src/utils/http_helpers"
 )
@@ -62,7 +63,13 @@ func ProxyHttp(req *http.Request) (data interface{}, errorType int, message stri
 	//send request
 	resp, err := client.Do(newRequest)
 	if err != nil {
-		return nil, InvalidInput, MsgProxyRequestFailed
+		if strings.Contains(err.Error(), "No connection could be made because the target machine actively refused it."){
+			return nil, InternalError, MsgProxyRequestFailedNoPort
+		}
+		if strings.Contains(err.Error(), "A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond."){
+			return nil, InternalError, MsgProxyRequestFailedNoHost
+		}
+		return nil, InternalError, MsgProxyRequestFailed
 	}
 	defer resp.Body.Close()
 
@@ -70,6 +77,9 @@ func ProxyHttp(req *http.Request) (data interface{}, errorType int, message stri
 	b, _ := ioutil.ReadAll(resp.Body)
 	var ret map[string]interface{}
 	if err := json.Unmarshal(b, &ret); err != nil {
+		if strings.Contains(err.Error(), "invalid character"){
+			return string(b), NoError, NoMessage
+		}
 		return nil, InvalidInput, MsgProxyParseReturnBodyFailed
 	}
 	return ret, NoError, NoMessage

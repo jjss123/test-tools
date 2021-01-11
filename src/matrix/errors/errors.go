@@ -113,8 +113,10 @@ const (
 
 
 	//Proxy
-	MsgProxyUnmarshalRequestFailed = "unmarshal request failed"
+	MsgProxyUnmarshalRequestFailed = "proxy unmarshal request failed"
 	MsgProxyParseUrlFailed = "proxy parse url failed"
 	MsgProxyRequestFailed = "proxy request failed"
 	MsgProxyParseReturnBodyFailed = "proxy parse return body failed"
+	MsgProxyRequestFailedNoPort = "proxy request failed haven't opened the port"
+	MsgProxyRequestFailedNoHost = "proxy request failed can't establish connection to the host"
 )
