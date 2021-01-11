@@ -21,8 +21,7 @@ func NewRouter() *mux.Router{
 
 	addTHF("GET", "/", handler.Index)
 
-	//r.Methods("POST").Path("/tool/proxy/protocol/http").HandlerFunc(handler.ProxyHttp)
-
 	addTHF("POST", "/tool/proxy/protocol/http", handler.ProxyHttp)
+
 	return r
 }

@@ -3,6 +3,7 @@ package handler
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -63,13 +64,8 @@ func ProxyHttp(req *http.Request) (data interface{}, errorType int, message stri
 	//send request
 	resp, err := client.Do(newRequest)
 	if err != nil {
-		if strings.Contains(err.Error(), "No connection could be made because the target machine actively refused it."){
-			return nil, InternalError, MsgProxyRequestFailedNoPort
-		}
-		if strings.Contains(err.Error(), "A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond."){
-			return nil, InternalError, MsgProxyRequestFailedNoHost
-		}
-		return nil, InternalError, MsgProxyRequestFailed
+		fmt.Println(err.Error())
+		return nil, InternalError, err.Error()
 	}
 	defer resp.Body.Close()
 
